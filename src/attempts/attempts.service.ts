@@ -14,14 +14,24 @@ import {
 import { Exam } from '../exams/schemas/exam.schema.js';
 import type { Question } from '../exams/schemas/question.schema.js';
 import { SaveAnswersDto, SubmitAttemptDto } from './dto/answers.dto.js';
-import { buildSnapshot, grade, GRACE_MS, sanitizeAnswers } from './grading.js';
+import {
+  buildSnapshot,
+  finishedFields,
+  GRACE_MS,
+  sanitizeAnswers,
+} from './grading.js';
 import { toResultView, toTakingView } from './attempt.mapper.js';
+import {
+  ProctoringService,
+  type ClientInfo,
+} from '../proctoring/proctoring.service.js';
 
 @Injectable()
 export class AttemptsService {
   constructor(
     @InjectModel(Attempt.name) private attempts: Model<Attempt>,
     @InjectModel(Exam.name) private exams: Model<Exam>,
+    private proctoring: ProctoringService,
   ) {}
 
   async start(examId: string, userId: string) {
@@ -63,6 +73,9 @@ export class AttemptsService {
         totalQuestions: questions.length,
         startedAt: now,
         expiresAt: new Date(now.getTime() + exam.duration * 60_000),
+        // Snapshot, so editing the exam mid-attempt can't change the rules
+        proctoring: exam.proctoring,
+        lastHeartbeatAt: now,
       });
       if (previous === 0) {
         await this.exams.updateOne(
@@ -74,7 +87,12 @@ export class AttemptsService {
     return { data: toTakingView(attempt) };
   }
 
-  async saveAnswers(id: string, userId: string, dto: SaveAnswersDto) {
+  async saveAnswers(
+    id: string,
+    userId: string,
+    dto: SaveAnswersDto,
+    client: ClientInfo = {},
+  ) {
     const attempt = await this.getOwn(id, userId);
     if (attempt.status !== AttemptStatus.InProgress) {
       throw new ConflictException('This attempt is already submitted');
@@ -82,10 +100,17 @@ export class AttemptsService {
     if (this.isExpired(attempt)) throw new ForbiddenException('Time is up');
     attempt.answers = sanitizeAnswers(dto.answers, attempt.questions);
     await attempt.save();
-    return { data: { savedAt: new Date() } };
+    // After saving, so an auto-submit triggered here grades these answers
+    const proctoring = await this.proctoring.checkHeartbeatGap(attempt, client);
+    return { data: { savedAt: new Date(), ...(proctoring && { proctoring }) } };
   }
 
-  async submit(id: string, userId: string, dto: SubmitAttemptDto) {
+  async submit(
+    id: string,
+    userId: string,
+    dto: SubmitAttemptDto,
+    client: ClientInfo = {},
+  ) {
     const attempt = await this.getOwn(id, userId);
     if (attempt.status !== AttemptStatus.InProgress) {
       return { data: toResultView(attempt) }; // idempotent
@@ -94,6 +119,12 @@ export class AttemptsService {
     // Late submissions are graded from the last autosave
     if (!late) {
       attempt.answers = sanitizeAnswers(dto.answers, attempt.questions);
+      await attempt.save();
+    }
+    // Log a final unexplained gap for the teacher; it may also hit the limit
+    const gap = await this.proctoring.checkHeartbeatGap(attempt, client);
+    if (gap && gap.status !== AttemptStatus.InProgress) {
+      return { data: toResultView(await this.getOwn(id, userId)) };
     }
     await this.finish(attempt, late || !!dto.timedOut);
     return { data: toResultView(attempt) };
@@ -118,24 +149,12 @@ export class AttemptsService {
   }
 
   private async finish(attempt: AttemptDocument, timedOut: boolean) {
-    const { score, correctCount, passed } = grade(
-      attempt.questions,
-      attempt.answers,
-      attempt.passingScore,
-    );
-    const end = Math.min(Date.now(), attempt.expiresAt.getTime());
-    attempt.set({
-      score,
-      correctCount,
-      passed,
-      certificateIssued: passed,
-      status: timedOut ? AttemptStatus.TimedOut : AttemptStatus.Submitted,
-      submittedAt: new Date(end),
-      timeTakenSeconds: Math.max(
-        0,
-        Math.round((end - attempt.startedAt.getTime()) / 1000),
+    attempt.set(
+      finishedFields(
+        attempt,
+        timedOut ? AttemptStatus.TimedOut : AttemptStatus.Submitted,
       ),
-    });
+    );
     await attempt.save();
   }
 

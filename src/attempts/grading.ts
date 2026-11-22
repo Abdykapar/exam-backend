@@ -1,5 +1,5 @@
 import { Question, QuestionType } from '../exams/schemas/question.schema.js';
-import type { AttemptAnswer } from './schemas/attempt.schema.js';
+import type { Attempt, AttemptAnswer, AttemptStatus } from './schemas/attempt.schema.js';
 import type { AnswerDto } from './dto/answers.dto.js';
 import { shuffle } from '../common/utils.js';
 
@@ -93,4 +93,23 @@ export function grade(
   });
   const score = total ? Math.round((earned / total) * 100) : 0;
   return { score, correctCount, passed: score >= passingScore, review };
+}
+
+/** Fields to set when an attempt ends. Time taken is capped at the server-side deadline. */
+export function finishedFields(
+  a: Pick<Attempt, 'questions' | 'answers' | 'passingScore' | 'startedAt' | 'expiresAt'>,
+  status: AttemptStatus,
+  now = Date.now(),
+): Partial<Attempt> {
+  const { score, correctCount, passed } = grade(a.questions, a.answers, a.passingScore);
+  const end = Math.min(now, a.expiresAt.getTime());
+  return {
+    score,
+    correctCount,
+    passed,
+    certificateIssued: passed,
+    status,
+    submittedAt: new Date(end),
+    timeTakenSeconds: Math.max(0, Math.round((end - a.startedAt.getTime()) / 1000)),
+  };
 }

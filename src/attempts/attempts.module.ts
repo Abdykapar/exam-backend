@@ -4,6 +4,7 @@ import { Attempt, AttemptSchema } from './schemas/attempt.schema.js';
 import { Exam, ExamSchema } from '../exams/schemas/exam.schema.js';
 import { AttemptsController } from './attempts.controller.js';
 import { AttemptsService } from './attempts.service.js';
+import { ProctoringModule } from '../proctoring/proctoring.module.js';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { AttemptsService } from './attempts.service.js';
       { name: Attempt.name, schema: AttemptSchema },
       { name: Exam.name, schema: ExamSchema },
     ]),
+    ProctoringModule,
   ],
   controllers: [AttemptsController],
   providers: [AttemptsService],

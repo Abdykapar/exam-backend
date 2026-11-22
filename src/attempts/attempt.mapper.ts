@@ -12,6 +12,8 @@ export function toTakingView(a: AttemptDocument) {
       expiresAt: a.expiresAt,
       answers: a.answers,
       totalQuestions: a.totalQuestions,
+      proctoring: a.proctoring,
+      violationCount: a.violationCount,
     },
     exam: {
       _id: a.exam,

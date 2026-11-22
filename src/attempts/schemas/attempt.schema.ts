@@ -4,6 +4,10 @@ import {
   Question,
   QuestionSchema,
 } from '../../exams/schemas/question.schema.js';
+import {
+  ExamProctoring,
+  ExamProctoringSchema,
+} from '../../exams/schemas/exam.schema.js';
 
 @Schema({ _id: false })
 export class AttemptAnswer {
@@ -18,6 +22,7 @@ export enum AttemptStatus {
   InProgress = 'in_progress',
   Submitted = 'submitted',
   TimedOut = 'timed_out',
+  AutoSubmitted = 'auto_submitted', // too many proctoring violations
 }
 
 @Schema({ timestamps: true })
@@ -43,6 +48,8 @@ export class Attempt {
   @Prop({ required: true }) passingScore: number;
   @Prop({ required: true }) duration: number;
   @Prop({ type: [QuestionSchema], default: [] }) questions: Question[];
+  @Prop({ type: ExamProctoringSchema, default: () => ({}) })
+  proctoring: ExamProctoring;
 
   // Progress
   @Prop({ type: [AttemptAnswerSchema], default: [] }) answers: AttemptAnswer[];
@@ -56,6 +63,10 @@ export class Attempt {
   @Prop({ required: true }) startedAt: Date;
   @Prop({ required: true }) expiresAt: Date;
   @Prop() submittedAt?: Date;
+
+  // Proctoring (counted on the server, never trusted from the client)
+  @Prop({ default: 0 }) violationCount: number;
+  @Prop() lastHeartbeatAt?: Date;
 
   // Result
   @Prop({ default: 0 }) score: number;

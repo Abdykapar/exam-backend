@@ -6,13 +6,16 @@ import {
   Param,
   Patch,
   Post,
+  Req,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import type { Request } from 'express';
 import { AttemptsService } from './attempts.service.js';
 import { SaveAnswersDto, SubmitAttemptDto } from './dto/answers.dto.js';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { ParseObjectIdPipe } from '../common/pipes/parse-object-id.pipe.js';
 import type { JwtUser } from '../common/types.js';
+import { clientInfo } from '../proctoring/proctoring.controller.js';
 
 /** Every role can take exams, so there is no @Roles here. */
 @ApiTags('attempts')
@@ -45,8 +48,9 @@ export class AttemptsController {
     @Param('id', ParseObjectIdPipe) id: string,
     @Body() dto: SaveAnswersDto,
     @CurrentUser() u: JwtUser,
+    @Req() req: Request,
   ) {
-    return this.service.saveAnswers(id, u.sub, dto);
+    return this.service.saveAnswers(id, u.sub, dto, clientInfo(req));
   }
 
   @HttpCode(200)
@@ -55,7 +59,8 @@ export class AttemptsController {
     @Param('id', ParseObjectIdPipe) id: string,
     @Body() dto: SubmitAttemptDto,
     @CurrentUser() u: JwtUser,
+    @Req() req: Request,
   ) {
-    return this.service.submit(id, u.sub, dto);
+    return this.service.submit(id, u.sub, dto, clientInfo(req));
   }
 }

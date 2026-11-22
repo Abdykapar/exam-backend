@@ -12,8 +12,16 @@ import {
   Max,
   MaxLength,
   Min,
+  ValidateNested,
 } from 'class-validator';
 import { DIFFICULTIES } from '../schemas/exam.schema.js';
+
+/** All fields are required so a PATCH replaces the whole setting consistently. */
+export class ProctoringDto {
+  @IsBoolean() enabled: boolean;
+  @IsInt() @Min(1) @Max(20) maxViolations: number;
+  @IsBoolean() requireFullscreen: boolean;
+}
 
 export class CreateExamDto {
   @IsString() @Length(3, 120) title: string;
@@ -31,6 +39,10 @@ export class CreateExamDto {
   @IsOptional() @IsBoolean() shuffleQuestions?: boolean;
   @IsOptional() @IsBoolean() shuffleOptions?: boolean;
   @IsOptional() @IsInt() @Min(0) @Max(100) maxAttempts?: number;
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ProctoringDto)
+  proctoring?: ProctoringDto;
 }
 
 export class UpdateExamDto extends PartialType(CreateExamDto) {}

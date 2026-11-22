@@ -4,6 +4,15 @@ import { Question, QuestionSchema } from './question.schema.js';
 
 export const DIFFICULTIES = ['Beginner', 'Intermediate', 'Advanced'] as const;
 
+/** Anti-cheating settings for online attempts. Off by default so existing exams are unaffected. */
+@Schema({ _id: false })
+export class ExamProctoring {
+  @Prop({ default: false }) enabled: boolean;
+  @Prop({ default: 3, min: 1, max: 20 }) maxViolations: number;
+  @Prop({ default: true }) requireFullscreen: boolean;
+}
+export const ExamProctoringSchema = SchemaFactory.createForClass(ExamProctoring);
+
 @Schema({ timestamps: true })
 export class Exam {
   @Prop({ required: true, trim: true }) title: string;
@@ -33,6 +42,8 @@ export class Exam {
   @Prop({ default: false }) shuffleQuestions: boolean;
   @Prop({ default: false }) shuffleOptions: boolean;
   @Prop({ default: 0 }) maxAttempts: number; // 0 = unlimited
+  @Prop({ type: ExamProctoringSchema, default: () => ({}) })
+  proctoring: ExamProctoring;
   @Prop({ default: false, index: true }) isPublished: boolean;
   @Prop({ default: 0 }) enrolledCount: number;
   @Prop({ default: 0 }) rating: number;

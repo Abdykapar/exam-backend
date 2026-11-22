@@ -12,7 +12,7 @@ export class AttemptAnswer {
   @Prop({ type: [Number], default: [] }) selectedIndexes: number[];
   @Prop({ default: false }) isFlagged: boolean;
 }
-const AttemptAnswerSchema = SchemaFactory.createForClass(AttemptAnswer);
+export const AttemptAnswerSchema = SchemaFactory.createForClass(AttemptAnswer);
 
 export enum AttemptStatus {
   InProgress = 'in_progress',

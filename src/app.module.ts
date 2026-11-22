@@ -10,6 +10,7 @@ import { CategoriesModule } from './categories/categories.module.js';
 import { ExamsModule } from './exams/exams.module.js';
 import { AttemptsModule } from './attempts/attempts.module.js';
 import { DashboardModule } from './dashboard/dashboard.module.js';
+import { OfflineModule } from './offline/offline.module.js';
 import { AuthGuard } from './common/guards/auth.guard.js';
 import { RolesGuard } from './common/guards/roles.guard.js';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
@@ -39,6 +40,7 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor.
     ExamsModule,
     AttemptsModule,
     DashboardModule,
+    OfflineModule,
   ],
   providers: [
     {

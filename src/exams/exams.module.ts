@@ -24,6 +24,6 @@ import { QuestionsService } from './questions.service.js';
   ],
   controllers: [ExamsController, QuestionsController],
   providers: [ExamsService, QuestionsService],
-  exports: [MongooseModule],
+  exports: [MongooseModule, ExamsService],
 })
 export class ExamsModule {}

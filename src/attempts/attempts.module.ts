@@ -4,6 +4,7 @@ import { Attempt, AttemptSchema } from './schemas/attempt.schema.js';
 import { Exam, ExamSchema } from '../exams/schemas/exam.schema.js';
 import { AttemptsController } from './attempts.controller.js';
 import { AttemptsService } from './attempts.service.js';
+import { User, UserSchema } from '../users/schemas/user.schema.js';
 import { ProctoringModule } from '../proctoring/proctoring.module.js';
 
 @Module({
@@ -11,6 +12,7 @@ import { ProctoringModule } from '../proctoring/proctoring.module.js';
     MongooseModule.forFeature([
       { name: Attempt.name, schema: AttemptSchema },
       { name: Exam.name, schema: ExamSchema },
+      { name: User.name, schema: UserSchema },
     ]),
     ProctoringModule,
   ],

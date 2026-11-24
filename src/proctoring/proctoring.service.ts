@@ -125,7 +125,7 @@ export class ProctoringService {
       this.attempts
         .find({ exam: exam._id })
         .select('-questions -answers')
-        .populate('user', 'firstName lastName email')
+        .populate('user', 'firstName lastName email isGuest')
         .sort({ createdAt: -1 })
         .lean(),
       this.violations.aggregate<{ _id: Types.ObjectId; n: number }>([
@@ -148,7 +148,7 @@ export class ProctoringService {
     const attempt = await this.attempts
       .findById(attemptId)
       .select('-questions -answers')
-      .populate('user', 'firstName lastName email')
+      .populate('user', 'firstName lastName email isGuest')
       .lean();
     if (!attempt) throw new NotFoundException('Attempt not found');
     await this.exams.getEditable(String(attempt.exam), user);

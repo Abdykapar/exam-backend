@@ -1,0 +1,14 @@
+{
+  "folders": [
+	{
+		"path": ".."
+	},
+	{
+		"path": "../../exam-platform"
+	},
+	{
+		"path": "../../exam-omr"
+	}
+],
+  "settings": {}
+}

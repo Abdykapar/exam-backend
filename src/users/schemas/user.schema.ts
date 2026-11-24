@@ -13,10 +13,12 @@ export class User {
   @Prop({ required: true, trim: true }) lastName: string;
   @Prop({ required: true, unique: true, lowercase: true, trim: true })
   email: string;
-  @Prop({ required: true, select: false }) password: string;
+  // Guests (joined a password-protected exam by link) have no password and can't log in
+  @Prop({ select: false }) password?: string;
   @Prop({ type: String, enum: Role, default: Role.Student }) role: Role;
   @Prop() bio?: string;
   @Prop() avatar?: string;
+  @Prop({ default: false }) isGuest: boolean;
 }
 
 export type UserDocument = HydratedDocument<User>;

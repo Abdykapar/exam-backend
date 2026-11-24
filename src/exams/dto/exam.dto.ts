@@ -39,6 +39,9 @@ export class CreateExamDto {
   @IsOptional() @IsBoolean() shuffleQuestions?: boolean;
   @IsOptional() @IsBoolean() shuffleOptions?: boolean;
   @IsOptional() @IsInt() @Min(0) @Max(100) maxAttempts?: number;
+  @IsOptional() @IsBoolean() perQuestionTiming?: boolean;
+  /** Empty string removes the password. */
+  @IsOptional() @IsString() @MaxLength(64) accessPassword?: string;
   @IsOptional()
   @ValidateNested()
   @Type(() => ProctoringDto)

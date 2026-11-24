@@ -37,7 +37,10 @@ export class AuthService {
     const user = await this.users
       .findOne({ email: dto.email.toLowerCase() })
       .select('+password');
-    if (!user || !(await bcrypt.compare(dto.password, user.password))) {
+    if (
+      !user?.password ||
+      !(await bcrypt.compare(dto.password, user.password))
+    ) {
       throw new UnauthorizedException('Invalid email or password');
     }
     return this.issueToken(user);

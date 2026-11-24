@@ -31,7 +31,11 @@ export class ExamsService {
 
   async listPublished(q: ListExamsQueryDto) {
     const page = q.page ?? 1;
-    const filter: Record<string, unknown> = { isPublished: true };
+    // Password-protected exams are link-only
+    const filter: Record<string, unknown> = {
+      isPublished: true,
+      accessPassword: { $in: ['', null] },
+    };
     if (q.category) {
       const cat = await this.categories.findOne({ slug: q.category }).select('_id');
       if (!cat) return { data: { exams: [], total: 0, pages: 1, page } };

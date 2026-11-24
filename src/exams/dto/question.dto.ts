@@ -30,6 +30,7 @@ export class QuestionDto {
   @IsOptional() @IsArray() @IsInt({ each: true }) correctIndexes?: number[];
   @IsOptional() @IsInt() @Min(1) @Max(100) points?: number;
   @IsOptional() @IsString() @MaxLength(2000) explanation?: string;
+  @IsOptional() @IsInt() @Min(5) @Max(3600) timeLimit?: number; // seconds
 }
 
 export class UpdateQuestionDto extends PartialType(QuestionDto) {}

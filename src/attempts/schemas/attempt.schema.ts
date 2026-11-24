@@ -61,6 +61,10 @@ export class Attempt {
   })
   status: AttemptStatus;
   @Prop({ required: true }) startedAt: Date;
+  /** Per-question timing: students see one question at a time and can't go back. */
+  @Prop({ default: false }) perQuestionTiming: boolean;
+  @Prop({ default: 0 }) currentQuestion: number;
+  @Prop() questionStartedAt?: Date;
   @Prop({ required: true }) expiresAt: Date;
   @Prop() submittedAt?: Date;
 

@@ -17,6 +17,8 @@ export class Question {
   @Prop({ type: [Number], default: undefined }) correctIndexes?: number[]; // multiple
   @Prop({ default: 1 }) points: number;
   @Prop() explanation?: string;
+  /** Seconds; only used when the exam has per-question timing. */
+  @Prop({ default: 60 }) timeLimit?: number;
 }
 
 export const QuestionSchema = SchemaFactory.createForClass(Question);
